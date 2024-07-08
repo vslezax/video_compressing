@@ -1,6 +1,8 @@
 #include <iostream>
+#include "ImageProcess/Image.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+    Image a;
+    a.readRGB("D:\\image.bmp");
+    a.writeRGB("D:\\12.bmp");
 }

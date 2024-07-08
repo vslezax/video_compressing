@@ -1,0 +1,15 @@
+# ninja log v5
+1	290	7421525030913540	build.ninja	e21bf637e5bff557
+0	2512	7421524959526672	CMakeFiles/video_compess.dir/main.cpp.obj	dc06bbb3a99f1c1d
+5	2794	7421524962335193	CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj	38e550d65242d1cf
+4	2345	7421525326900697	CMakeFiles/video_compess.dir/main.cpp.obj	dc06bbb3a99f1c1d
+10	2617	7421525329617441	CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj	38e550d65242d1cf
+3	2401	7421525598557802	CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj	38e550d65242d1cf
+3	2328	7421525718324675	CMakeFiles/video_compess.dir/main.cpp.obj	dc06bbb3a99f1c1d
+8	2597	7421525721033269	CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj	38e550d65242d1cf
+2598	2740	7421525722422441	video_compess.exe	2635e8c7334c0f81
+5	2714	7421526176649293	CMakeFiles/video_compess.dir/main.cpp.obj	dc06bbb3a99f1c1d
+12	2984	7421526179338179	CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj	38e550d65242d1cf
+2985	3137	7421526180797347	video_compess.exe	2635e8c7334c0f81
+6	2463	7421527795879718	CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj	38e550d65242d1cf
+2463	2594	7421527797149060	video_compess.exe	2635e8c7334c0f81
