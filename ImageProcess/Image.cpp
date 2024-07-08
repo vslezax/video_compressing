@@ -4,6 +4,8 @@
 #include <chrono>
 #include <sstream>
 
+#define LOG true
+
 int readDWORD(const unsigned char* buffer, int pos);
 inline std::string getTime();
 
@@ -17,7 +19,7 @@ void Image::readRGB(std::ifstream& file) {
         file.read(reinterpret_cast<char *>(&B), 1);
         file.read(reinterpret_cast<char *>(&G), 1);
         file.read(reinterpret_cast<char *>(&R), 1);
-        RGB.emplace_back(B, G, R);
+        RGB.emplace_back(R, G, B);
     }
 }
 
@@ -63,6 +65,10 @@ bool Image::saveImage(const std::string &path) {
         std::cerr << getTime() << "Image::saveImage() | " <<  path << " not opened" << std::endl;
         return false;
     }
+    if (RGB.empty()){
+        std::cerr << getTime() << "Image::saveImage() | Image have no RGB data!" << std::endl;
+        exit(-1);
+    }
 
     file.write(reinterpret_cast<char *>(&header), sizeof(header));
     writeRGB(file);
@@ -87,11 +93,13 @@ bool Image::RGBtoYCbCr() {
 
     YCbCr.reserve(H*W);
     for (int p = 0; p < RGB.size(); p++){
-        YCbCr.emplace_back(RGB[p].R, RGB[p].G, RGB[p].B);
+        PixelYCbCr pix;
+        pix.fromRGB(RGB[p].R, RGB[p].G, RGB[p].B);
+        YCbCr.emplace_back(pix);
     }
 
     RGB.clear();
-    std::cout << getTime() << "Image::RGBtoYCbCr() | " << " RGB -> YCbCr created." << std::endl;
+    if (LOG) std::cout << getTime() << "Image::RGBtoYCbCr() | " << " RGB -> YCbCr created." << std::endl;
     return true;
 }
 
@@ -106,17 +114,112 @@ bool Image::YCbCrtoRGB() {
 
     RGB.reserve(H*W);
     for (int p = 0; p < YCbCr.size(); p++){
-        RGB.emplace_back(YCbCr[p].Y, YCbCr[p].Cb, YCbCr[p].Cr);
+        PixelRGB pixel;
+        pixel.fromYCbCr(YCbCr[p].Y, YCbCr[p].Cb, YCbCr[p].Cr);
+        RGB.emplace_back(pixel);
     }
 
     YCbCr.clear();
-    std::cout << getTime() << "Image::YCbCrtoRGB() | " << " YCbCr -> RGB created." << std::endl;
+    if (LOG) std::cout << getTime() << "Image::YCbCrtoRGB() | " << " YCbCr -> RGB created." << std::endl;
     return true;
 }
+
+///
+/// Create Cb and Cr vector based on YCbCr
+///
+void Image::subsampleChroma() {
+    if (YCbCr.empty()){
+        std::cerr << getTime() << "Image::subsampleChroma() | Object have no YCbCr data." << std::endl;
+        return;
+    }
+
+    Cb.resize(H*W/4);
+    Cr.resize(H*W/4);
+    int n = 0;
+    for (int i = 0; i < H; i = i + 2){
+        for (int j = 0; j < W; j = j + 2){
+            int tmpCb = YCbCr[i * W + j].Cb + YCbCr[i * W + j + 1].Cb + YCbCr[(i + 1) * W + j].Cb + YCbCr[(i + 1) * W + j + 1].Cb;
+            tmpCb /= 4;
+            int tmpCr = YCbCr[i * W + j].Cr + YCbCr[i * W + j + 1].Cr + YCbCr[(i + 1) * W + j].Cr + YCbCr[(i + 1) * W + j + 1].Cr;
+            tmpCr /= 4;
+            Cb[n] = clipping(static_cast<float>(tmpCb));
+            Cr[n++] = clipping(static_cast<float>(tmpCr));
+        }
+    }
+    if (LOG) std::cout << getTime() << "Image::subsampleChroma() | " << " Successful subsample." << std::endl;
+}
+
+///
+/// Write H*W Y component, and H*W/4 Cb and Cr components
+///
+void Image::writeSubsampledYCbCr(std::ofstream& file) {
+    if (YCbCr.empty() || Cb.empty() || Cr.empty()){
+        std::cerr << getTime() << "Image::subsampleChroma() | Object have no YCbCr, Cb or Cr data." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < H*W; i++){
+        file.put(YCbCr[i].Y);
+    }
+    for (int i = 0; i < H*W/4; i++){
+        file.put(Cb[i]);
+    }
+    for (int i = 0; i < H*W/4; i++){
+        file.put(Cr[i]);
+    }
+    Cb.clear();
+    Cr.clear();
+}
+
+///
+/// Read H*W Y component, and H*W/4 Cb and Cr components
+///
+void Image::readSubsampledYCbCr(std::ifstream& file){
+    YCbCr.resize(H * W);
+    Cb.resize(H * W / 4);
+    Cr.resize(H * W / 4);
+
+    for (int i = 0; i < H * W; i++){
+        unsigned char Y;
+        file.read(reinterpret_cast<char *>(&Y), 1);
+        YCbCr[i] = PixelYCbCr(Y, 0, 0);
+    }
+    for (int i = 0; i < H * W / 4; i++){
+        unsigned char cb;
+        file.read(reinterpret_cast<char *>(&cb), 1);
+        Cb[i] = cb;
+    }
+    for (int i = 0; i < H * W / 4; i++){
+        unsigned char cr;
+        file.read(reinterpret_cast<char *>(&cr), 1);
+        Cr[i] = cr;
+    }
+
+    for (int i = 0; i < H; i += 2){
+        for (int j = 0; j < W; j += 2){
+            int index = (i / 2) * W/2 + (j / 2);
+            unsigned char tmpCb = Cb[index];
+            unsigned char tmpCr = Cr[index];
+
+            YCbCr[i * W + j].Cb = tmpCb; YCbCr[i * W + j].Cr = tmpCr;
+            YCbCr[i * W + j + 1].Cb = tmpCb; YCbCr[i * W + j + 1].Cr = tmpCr;
+            YCbCr[(i + 1) * W + j].Cb = tmpCb; YCbCr[(i + 1) * W + j].Cr = tmpCr;
+            YCbCr[(i + 1) * W + j + 1].Cb = tmpCb; YCbCr[(i + 1) * W + j + 1].Cr = tmpCr;
+        }
+    }
+
+
+    Cb.clear();
+    Cr.clear();
+    YCbCrtoRGB();
+}
+
 
 Image::~Image(){
     RGB.clear();
     YCbCr.clear();
+    Cb.clear();
+    Cr.clear();
 }
 
 inline std::string getTime(){

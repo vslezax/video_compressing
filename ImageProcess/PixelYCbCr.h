@@ -8,20 +8,23 @@ public:
     unsigned char Y;
     unsigned char Cb;
     unsigned char Cr;
-    PixelYCbCr(){
-        Y = 0;
-        Cb = 0;
-        Cr = 0;
-    }
-    PixelYCbCr(unsigned char Y, unsigned char Cb, unsigned char Cr){
-        this->Y = Y;
-        this->Cb = Cb;
-        this->Cr = Cr;
-    }
-    void fromRGB(unsigned char R, unsigned char G, unsigned char B){
-        Y = clipping(0.299*R + 0.587*G + 0.114*B);
-        Cb = clipping(0.5643*(B - Y) + 128);
-        Cr = clipping(0.7132*(R - Y) + 128);
+
+    PixelYCbCr() : Y(0), Cb(0), Cr(0) {}
+
+    PixelYCbCr(unsigned char Y, unsigned char Cb, unsigned char Cr) : Y(Y), Cb(Cb), Cr(Cr) {}
+
+    void fromRGB(unsigned char R, unsigned char G, unsigned char B) {
+        float r = static_cast<float>(R);
+        float g = static_cast<float>(G);
+        float b = static_cast<float>(B);
+
+        float y = 0.299f * r + 0.587f * g + 0.114f * b;
+        float cb = -0.168736f * r - 0.331264f * g + 0.5f * b + 128.0f;
+        float cr = 0.5f * r - 0.418688f * g - 0.081312f * b + 128.0f;
+
+        Y = clipping(y);
+        Cb = clipping(cb);
+        Cr = clipping(cr);
     }
 };
 

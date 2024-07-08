@@ -8,6 +8,11 @@
 #include <fstream>
 #include "ImageProcess/Image.h"
 
+enum Mode{
+    UNCOMPRESSED,
+    SUBSAMPLING
+};
+
 inline std::string getTime(){
     std::time_t t = std::time(0);   // get time now
     std::tm* now = std::localtime(&t);
@@ -45,7 +50,7 @@ void writeFirstFrame(std::ofstream& video, const std::string& file){
     video.write(reinterpret_cast<char*>(&firstFrame.RGB), sizeof(firstFrame.RGB));
 }
 
-void saveUncompressedVideo(const std::string& path){
+void saveVideo(const std::string& path, Mode mode){
     std::cout << getTime() << "Working with directory '" + path + "'." << std::endl;
     auto files = listFiles(path);
     if (files.empty()){
@@ -58,16 +63,33 @@ void saveUncompressedVideo(const std::string& path){
         std::cerr << "Unable to create video file." << std::endl;
         exit(-1);
     }
-    video.put(0); // mode = 0 (uncompressed)
+
+    switch (mode){
+        case UNCOMPRESSED:{
+            video.put(0);
+            break;
+        }
+        case SUBSAMPLING:{
+            video.put(1);
+            break;
+        }
+    }
 
     Image frame;
     frame.readImage(files[0]);
     int H = frame.H;
     int W = frame.W;
     video.write(reinterpret_cast<char*>(&frame.header), sizeof(frame.header));
-    frame.writeRGB(video);
-    for (int i = 1; i < files.size(); i++){
+    for (int i = 0; i < files.size(); i++){
         frame.readImage(files[i]);
+        switch (mode){
+            case UNCOMPRESSED: break;
+            case SUBSAMPLING:{
+                frame.RGBtoYCbCr();
+                frame.subsampleChroma();
+                frame.writeSubsampledYCbCr(video);
+            }
+        }
         if (H == frame.H && W == frame.W) frame.writeRGB(video);
         else std::cout << getTime() << files[i] << " skipped because of another resolution." << std::endl;
     }
@@ -92,15 +114,24 @@ void readVideo(const std::string& videoPath, const std::string& output){
     frame.H = readDWORD(frame.header, 22);
     int i = 1;
     while (!video.eof()){
-        frame.readRGB(video);
-        if (video.eof()) break;
+        switch (mode){
+            case 0:{
+                frame.readRGB(video);
+                break;
+            }
+            case 1:{
+                frame.readSubsampledYCbCr(video);
+                break;
+            }
+        }
+        if (video.eof() || video.fail()) break;
         std::stringstream ss;
         ss << output << "\\" << i << ".bmp";
         frame.saveImage(ss.str());
         std::cout << getTime() << " Exported " << i++ << ".bmp" << std::endl;
     }
 
-    std::cout << output + " images created. Frames = " << i << std::endl;
+    std::cout << output + " images created. Frames = " << i-1 << std::endl;
 }
 
 #endif //VIDEO_COMPESS_VIDEO_H
