@@ -9,4 +9,5 @@ add_executable(video_compess main.cpp
         ImageProcess/PixelRGB.h
         ImageProcess/PixelYCbCr.h
         ImageProcess/clipping.h
+        video.h
 )

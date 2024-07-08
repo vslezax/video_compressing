@@ -2,55 +2,86 @@
 #include <fstream>
 #include <iostream>
 #include <chrono>
-#include <iomanip>
 #include <sstream>
 
-std::string getTime(){
-    auto now = std::chrono::system_clock::now();
-    std::time_t tt = std::chrono::system_clock::to_time_t(now);
-    std::tm *lt = std::localtime(&tt);
-    std::stringstream ss;
-    ss.fill('0');
-    ss << std::setw(2) << lt->tm_hour << ":"
-       << std::setw(2) << lt->tm_min << ":"
-       << std::setw(2) << lt->tm_sec;
-    return " | " + ss.str() + " | Image.cpp::Image";
+int readDWORD(const unsigned char* buffer, int pos);
+inline std::string getTime();
+
+///
+/// Reading RGB pixels until EOF
+///
+void Image::readRGB(std::ifstream& file) {
+    RGB.clear();
+    for (int i = 0; i < H*W; i++){
+        unsigned char R, G, B;
+        file.read(reinterpret_cast<char *>(&B), 1);
+        file.read(reinterpret_cast<char *>(&G), 1);
+        file.read(reinterpret_cast<char *>(&R), 1);
+        RGB.emplace_back(B, G, R);
+    }
 }
 
-bool Image::readRGB(const std::string &path) {
+///
+/// Reading entire file: HEADER + RGB PIXELS
+///
+bool Image::readImage(const std::string &path) {
+    RGB.clear();
     std::ifstream file(path, std::ios::binary);
     if (!file.is_open()){
-        std::cerr << getTime() << "::readRGB() | " <<  path << " not opened" << std::endl;
+        std::cerr << getTime() << "Image::readImage() | " <<  path << " not opened" << std::endl;
         return false;
     }
-    file.read(reinterpret_cast<char*>(&fileHeader), sizeof(fileHeader));
-    file.read(reinterpret_cast<char*>(&infoHeader), sizeof(infoHeader));
-    H = infoHeader.biHeight;
-    W = infoHeader.biWidth;
 
-    if (infoHeader.biBitCount != 24) {
-        std::cerr << "::readRGB() | " << path << " is not True Color 24 BMP!";
-        exit(-1);
-    }
-
-    W = infoHeader.biWidth;
-    H = infoHeader.biHeight;
-
-    RGB.reserve(H*W);
-    file.read(reinterpret_cast<char *>(RGB.data()), infoHeader.biSizeImage);
+    file.read(reinterpret_cast<char*>(&header), sizeof(header));
+    W = readDWORD(header, 18);
+    H = readDWORD(header, 22);
+    file.seekg(54);
+    readRGB(file);
 
     file.close();
-    std::cout << getTime() << "::readRGB() | " << path << " RGB read." << std::endl;
+    std::cout << getTime() << "Image::readImage() | " << path << " RGB read, pixels: " << RGB.size() << std::endl;
     return true;
 }
 
-bool Image::readYCbCr(const std::string &path) {
-    return false;
+///
+/// Writing RGB pixels
+///
+void Image::writeRGB(std::ofstream& file) {
+    for (auto pixel: RGB){
+        file.put(pixel.B);
+        file.put(pixel.G);
+        file.put(pixel.R);
+    }
 }
 
+///
+/// Writing entire file: HEADER + RGB PIXELS
+///
+bool Image::saveImage(const std::string &path) {
+    std::ofstream file(path, std::ios::binary);
+    if (!file.is_open()){
+        std::cerr << getTime() << "Image::saveImage() | " <<  path << " not opened" << std::endl;
+        return false;
+    }
+
+    file.write(reinterpret_cast<char *>(&header), sizeof(header));
+    writeRGB(file);
+
+    file.close();
+    std::cout << getTime() << "Image::writeRGB() | " << path << " RGB wrote." << std::endl;
+    return true;
+}
+
+
+
+
+
+///
+/// Converting RGB to YCbCr
+///
 bool Image::RGBtoYCbCr() {
     if (RGB.empty()){
-        std::cerr << getTime() << "::RGBtoYCbCr() | Object have no RGB data." << std::endl;
+        std::cerr << getTime() << "Image::RGBtoYCbCr() | Object have no RGB data." << std::endl;
         return false;
     }
 
@@ -60,13 +91,16 @@ bool Image::RGBtoYCbCr() {
     }
 
     RGB.clear();
-    std::cout << getTime() << "::RGBtoYCbCr() | " << " RGB -> YCbCr created." << std::endl;
+    std::cout << getTime() << "Image::RGBtoYCbCr() | " << " RGB -> YCbCr created." << std::endl;
     return true;
 }
 
+///
+/// Converting YCbCr to RGB
+///
 bool Image::YCbCrtoRGB() {
     if (YCbCr.empty()){
-        std::cerr << getTime() << "::YCbCrtoRGB() | Object have no YCbCr data." << std::endl;
+        std::cerr << getTime() << "Image::YCbCrtoRGB() | Object have no YCbCr data." << std::endl;
         return false;
     }
 
@@ -76,23 +110,32 @@ bool Image::YCbCrtoRGB() {
     }
 
     YCbCr.clear();
-    std::cout << getTime() << "::YCbCrtoRGB() | " << " YCbCr -> RGB created." << std::endl;
+    std::cout << getTime() << "Image::YCbCrtoRGB() | " << " YCbCr -> RGB created." << std::endl;
     return true;
 }
 
-bool Image::writeRGB(const std::string &path) {
-    std::ofstream file(path, std::ios::binary);
-    if (!file.is_open()){
-        std::cerr << getTime() << "::writeRGB() | " <<  path << " not opened" << std::endl;
-        return false;
-    }
+Image::~Image(){
+    RGB.clear();
+    YCbCr.clear();
+}
 
-    file.write(reinterpret_cast<char*>(&fileHeader), sizeof(fileHeader));
-    file.write(reinterpret_cast<char*>(&infoHeader), sizeof(infoHeader));
+inline std::string getTime(){
+    std::time_t t = std::time(0);   // get time now
+    std::tm* now = std::localtime(&t);
+    std::stringstream ss;
+    ss << (now->tm_year + 1900) << '-'
+       << (now->tm_mon + 1) << '-'
+       << now->tm_mday << " ";
+    ss << now->tm_hour << ":"
+       << now->tm_min << ":"
+       << now->tm_sec << " | ";
+    return ss.str();
+}
 
-    file.write(reinterpret_cast<char *>(RGB.data()), infoHeader.biSizeImage);
-
-    file.close();
-    std::cout << getTime() << "::writeRGB() | " << path << " RGB wrote." << std::endl;
-    return true;
+int readDWORD(const unsigned char* buffer, int pos){
+    int value = static_cast<int>(buffer[pos]) |
+                (static_cast<int>(buffer[pos+1]) << 8) |
+                (static_cast<int>(buffer[pos+2]) << 16) |
+                (static_cast<int>(buffer[pos+3]) << 24);
+    return value;
 }

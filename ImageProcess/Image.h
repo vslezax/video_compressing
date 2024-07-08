@@ -11,16 +11,19 @@ class Image {
 public:
     std::vector<PixelRGB> RGB;
     std::vector<PixelYCbCr> YCbCr;
-    short H;
-    short W;
-    BITMAPFILEHEADER fileHeader;
-    BITMAPINFOHEADER infoHeader;
-    bool readRGB(const std::string& path);
-    bool readYCbCr(const std::string& path);
+    int H;
+    int W;
+    unsigned char header[54];
+    bool readImage(const std::string& path);
+    void readRGB(std::ifstream& file);
     bool RGBtoYCbCr();
     bool YCbCrtoRGB();
-    bool writeRGB(const std::string& path);
+    void writeRGB(std::ofstream& file);
+    bool saveImage(const std::string& path);
+    ~Image();
 };
+
+int readDWORD(const unsigned char* buffer, int pos);
 
 
 #endif //VIDEO_COMPESS_IMAGE_H

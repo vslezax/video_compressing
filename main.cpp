@@ -1,8 +1,7 @@
 #include <iostream>
-#include "ImageProcess/Image.h"
+#include "video.h"
 
 int main() {
-    Image a;
-    a.readRGB("D:\\image.bmp");
-    a.writeRGB("D:\\12.bmp");
+    saveUncompressedVideo("D:\\Sequence\\");
+    readVideo("D:\\Sequence\\untitled.video", "D:\\1");
 }

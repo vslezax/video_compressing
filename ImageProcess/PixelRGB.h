@@ -8,10 +8,20 @@ public:
     unsigned char R;
     unsigned char G;
     unsigned char B;
-    PixelRGB(unsigned char Y, unsigned char Cb, unsigned char Cr){
-        unsigned char R = clipping(Y - 0.714*(Cr - 128) - 0.334*(Cb - 128));
-        unsigned char G = clipping(Y + 1.402*(Cr - 128));
-        unsigned char B = clipping(Y + 1.772*(Cb - 128));
+    PixelRGB(){
+        R = 0;
+        G = 0;
+        B = 0;
+    }
+    PixelRGB(unsigned char R, unsigned char G, unsigned char B){
+        this->R = R;
+        this->G = G;
+        this->B = B;
+    }
+    void fromYCbCr(unsigned char Y, unsigned char Cb, unsigned char Cr){
+        R = clipping(Y - 0.714*(Cr - 128) - 0.334*(Cb - 128));
+        G = clipping(Y + 1.402*(Cr - 128));
+        B = clipping(Y + 1.772*(Cb - 128));
     }
 };
 
