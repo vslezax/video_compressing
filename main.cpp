@@ -8,13 +8,16 @@ int main() {
     Image a;
     a.readImage("D:\\Sequence\\0001.bmp");
     a.RGBtoYCbCr();
-    a.subsampleChroma();
-    std::ofstream file("D:\\Sequence\\0.bmp", std::ios::binary);
-    a.writeSubsampledYCbCr(file);
-    file.close();
+    a.YCbCr_toChannels();
+    a.DCT(DCT_mode::Y);
+    a.unDCT(DCT_mode::Y);
+    a.YCbCrChannel_toYCbCr();
+    a.YCbCrtoRGB();
+    a.saveImage("D:\\Sequence\\_dct.bmp");
 
-    std::ifstream file1("D:\\Sequence\\0.bmp", std::ios::binary);
-    a.readSubsampledYCbCr(file1);
-    file1.close();
-    a.saveImage("D:\\Sequence\\_1.bmp");
+ /*
+    std::vector<double> a = {0, 1, 2, 3, 4};
+    FastDctFft::transform(a);
+    FastDctFft::inverseTransform(a);
+    std::cout << std::endl;*/
 }

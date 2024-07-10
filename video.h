@@ -7,10 +7,13 @@
 #include <iostream>
 #include <fstream>
 #include "ImageProcess/Image.h"
+#include "ImageProcess/DCT.h"
+#include "ImageProcess/FastDCT/FastDctFft.hpp"
 
 enum Mode{
     UNCOMPRESSED,
-    SUBSAMPLING
+    SUBSAMPLING,
+    SUBSAMPLINGandDCT
 };
 
 inline std::string getTime(){
@@ -73,6 +76,10 @@ void saveVideo(const std::string& path, Mode mode){
             video.put(1);
             break;
         }
+        case SUBSAMPLINGandDCT:{
+            video.put(2);
+            break;
+        }
     }
 
     Image frame;
@@ -88,6 +95,10 @@ void saveVideo(const std::string& path, Mode mode){
                 frame.RGBtoYCbCr();
                 frame.subsampleChroma();
                 frame.writeSubsampledYCbCr(video);
+            }
+            case SUBSAMPLINGandDCT:{
+                frame.RGBtoYCbCr();
+                frame.subsampleChroma();
             }
         }
         if (H == frame.H && W == frame.W) frame.writeRGB(video);

@@ -10,4 +10,12 @@ add_executable(video_compess main.cpp
         ImageProcess/PixelYCbCr.h
         ImageProcess/clipping.h
         video.h
+        ImageProcess/DCT.h
+        ImageProcess/FastDCT/FftRealPair.hpp
+        ImageProcess/FastDCT/FftRealPair.cpp
+        ImageProcess/FastDCT/FastDctLee.hpp
+        ImageProcess/FastDCT/FastDctLee.cpp
+        ImageProcess/FastDCT/FastDctFft.cpp
+        ImageProcess/FastDCT/NaiveDct.hpp
+        ImageProcess/FastDCT/NaiveDct.cpp
 )

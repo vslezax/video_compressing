@@ -61,6 +61,30 @@ build CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj: CXX_COMPILER__vid
   OBJECT_DIR = CMakeFiles\video_compess.dir
   OBJECT_FILE_DIR = CMakeFiles\video_compess.dir\ImageProcess
 
+build CMakeFiles/video_compess.dir/ImageProcess/FastDCT/FftRealPair.cpp.obj: CXX_COMPILER__video_compess_unscanned_Debug C$:/Users/user/CLionProjects/video_compess/ImageProcess/FastDCT/FftRealPair.cpp || cmake_object_order_depends_target_video_compess
+  DEP_FILE = CMakeFiles\video_compess.dir\ImageProcess\FastDCT\FftRealPair.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\video_compess.dir
+  OBJECT_FILE_DIR = CMakeFiles\video_compess.dir\ImageProcess\FastDCT
+
+build CMakeFiles/video_compess.dir/ImageProcess/FastDCT/FastDctLee.cpp.obj: CXX_COMPILER__video_compess_unscanned_Debug C$:/Users/user/CLionProjects/video_compess/ImageProcess/FastDCT/FastDctLee.cpp || cmake_object_order_depends_target_video_compess
+  DEP_FILE = CMakeFiles\video_compess.dir\ImageProcess\FastDCT\FastDctLee.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\video_compess.dir
+  OBJECT_FILE_DIR = CMakeFiles\video_compess.dir\ImageProcess\FastDCT
+
+build CMakeFiles/video_compess.dir/ImageProcess/FastDCT/FastDctFft.cpp.obj: CXX_COMPILER__video_compess_unscanned_Debug C$:/Users/user/CLionProjects/video_compess/ImageProcess/FastDCT/FastDctFft.cpp || cmake_object_order_depends_target_video_compess
+  DEP_FILE = CMakeFiles\video_compess.dir\ImageProcess\FastDCT\FastDctFft.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\video_compess.dir
+  OBJECT_FILE_DIR = CMakeFiles\video_compess.dir\ImageProcess\FastDCT
+
+build CMakeFiles/video_compess.dir/ImageProcess/FastDCT/NaiveDct.cpp.obj: CXX_COMPILER__video_compess_unscanned_Debug C$:/Users/user/CLionProjects/video_compess/ImageProcess/FastDCT/NaiveDct.cpp || cmake_object_order_depends_target_video_compess
+  DEP_FILE = CMakeFiles\video_compess.dir\ImageProcess\FastDCT\NaiveDct.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\video_compess.dir
+  OBJECT_FILE_DIR = CMakeFiles\video_compess.dir\ImageProcess\FastDCT
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target video_compess
@@ -69,7 +93,7 @@ build CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj: CXX_COMPILER__vid
 #############################################
 # Link the executable video_compess.exe
 
-build video_compess.exe: CXX_EXECUTABLE_LINKER__video_compess_Debug CMakeFiles/video_compess.dir/main.cpp.obj CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj
+build video_compess.exe: CXX_EXECUTABLE_LINKER__video_compess_Debug CMakeFiles/video_compess.dir/main.cpp.obj CMakeFiles/video_compess.dir/ImageProcess/Image.cpp.obj CMakeFiles/video_compess.dir/ImageProcess/FastDCT/FftRealPair.cpp.obj CMakeFiles/video_compess.dir/ImageProcess/FastDCT/FastDctLee.cpp.obj CMakeFiles/video_compess.dir/ImageProcess/FastDCT/FastDctFft.cpp.obj CMakeFiles/video_compess.dir/ImageProcess/FastDCT/NaiveDct.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\video_compess.dir

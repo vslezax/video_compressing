@@ -7,10 +7,18 @@
 #include "PixelYCbCr.h"
 #include "Windows.h"
 
+enum DCT_mode{
+    Y,
+    Cb,
+    Cr,
+    YCbCr
+};
+
 class Image {
 public:
     std::vector<PixelRGB> RGB;
     std::vector<PixelYCbCr> YCbCr;
+    std::vector<unsigned char> Y;
     std::vector<unsigned char> Cb;
     std::vector<unsigned char> Cr;
     int H;
@@ -27,6 +35,11 @@ public:
     void subsampleChroma();
     void writeSubsampledYCbCr(std::ofstream& file);
     void readSubsampledYCbCr(std::ifstream& file);
+    void YCbCr_toChannels();
+    void YCbCrChannel_toYCbCr();
+    void DCT(DCT_mode mode);
+    void unDCT(DCT_mode mode);
+    void reworkYCbCrbyCbCr();
 };
 
 int readDWORD(const unsigned char* buffer, int pos);

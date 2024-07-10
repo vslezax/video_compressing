@@ -3,6 +3,7 @@
 #include <iostream>
 #include <chrono>
 #include <sstream>
+#include "DCT.h"
 
 #define LOG true
 
@@ -218,6 +219,95 @@ void Image::readSubsampledYCbCr(std::ifstream& file){
 Image::~Image(){
     RGB.clear();
     YCbCr.clear();
+    Cb.clear();
+    Cr.clear();
+}
+
+void Image::DCT(DCT_mode mode) {
+    switch (mode){
+        case DCT_mode::Y:{
+            if (Y.empty()){
+                std::cerr << getTime() << "Image::DCT() | Object have no Y data." << std::endl;
+                return;
+            }
+            Y = DCTimage(Y, H, W, true);
+        }
+        case DCT_mode::Cb:{
+            if (Cb.empty()){
+                std::cerr << getTime() << "Image::DCT() | Object have no Cb data." << std::endl;
+                return;
+            }
+            Cb = DCTimage(Cb, H, W, true);
+        }
+        case DCT_mode::Cr:{
+            if (Cr.empty()){
+                std::cerr << getTime() << "Image::DCT() | Object have no Cr data." << std::endl;
+                return;
+            }
+            Cr = DCTimage(Cr, H, W, true);
+        }
+    }
+}
+
+void Image::unDCT(DCT_mode mode) {
+    switch (mode){
+        case DCT_mode::Y:{
+            if (Y.empty()){
+                std::cerr << getTime() << "Image::DCT() | Object have no Ydata." << std::endl;
+                return;
+            }
+            Y = DCTimage(Y, H, W, false);
+        }
+        case DCT_mode::Cb:{
+            if (Cb.empty()){
+                std::cerr << getTime() << "Image::DCT() | Object have no Cb data." << std::endl;
+                return;
+            }
+            Cb = DCTimage(Cb, H, W, false);
+        }
+        case DCT_mode::Cr:{
+            if (Cr.empty()){
+                std::cerr << getTime() << "Image::DCT() | Object have no Cr data." << std::endl;
+                return;
+            }
+            Cr = DCTimage(Cr, H, W, false);
+        }
+    }
+}
+
+void Image::reworkYCbCrbyCbCr() {
+    for (int i = 0; i < H; i += 2){
+        for (int j = 0; j < W; j += 2){
+            int index = (i / 2) * W/2 + (j / 2);
+            unsigned char tmpCb = Cb[index];
+            unsigned char tmpCr = Cr[index];
+
+            YCbCr[i * W + j].Cb = tmpCb; YCbCr[i * W + j].Cr = tmpCr;
+            YCbCr[i * W + j + 1].Cb = tmpCb; YCbCr[i * W + j + 1].Cr = tmpCr;
+            YCbCr[(i + 1) * W + j].Cb = tmpCb; YCbCr[(i + 1) * W + j].Cr = tmpCr;
+            YCbCr[(i + 1) * W + j + 1].Cb = tmpCb; YCbCr[(i + 1) * W + j + 1].Cr = tmpCr;
+        }
+    }
+}
+
+void Image::YCbCr_toChannels() {
+    Y.resize(H*W);
+    Cb.resize(H*W);
+    Cr.resize(H*W);
+    for (int i = 0; i < H*W; i++){
+        Y[i] = YCbCr[i].Y;
+        Cb[i] = YCbCr[i].Cb;
+        Cr[i] = YCbCr[i].Cr;
+    }
+    YCbCr.clear();
+}
+
+void Image::YCbCrChannel_toYCbCr() {
+    YCbCr.resize(H*W);
+    for (int i = 0; i < H*W; i++){
+        YCbCr[i] = PixelYCbCr(Y[i], Cb[i], Cr[i]);
+    }
+    Y.clear();
     Cb.clear();
     Cr.clear();
 }
